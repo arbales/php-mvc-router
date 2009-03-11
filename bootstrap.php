@@ -1,11 +1,9 @@
 <?php
-require_once('helpers/utility.php');
-require_once('helpers/router.php');
-require_once('config/config.php');
-require_once('controllers/controller.php');
-require_once('config/routes.php');
+require_once('autoload.php');
+App::$site = $_SERVER['DOCUMENT_ROOT'];
 
-
+require_once('system/utility.php');
+require_once('config/routes.inc.php');
 
 mb_internal_encoding('UTF-8');
 mb_http_output('UTF-8');

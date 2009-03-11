@@ -5,9 +5,16 @@ Ben's Magic PHP routing class
 The static (class) methods in this class are used to find an appropriate controller/action to handle our request
 */
 
-class router {
+class Router {
+	
+	public static $welcome_route;
+	public static $routes;
 
 	static function route() {
+		
+		if (!isset(self::$welcome_route)){
+			self::$welcome_route = 'welcome';
+		}
 	
 		$url = explode('?',$_SERVER['REQUEST_URI']);
 		$path = mb_strtolower($url[0]);
@@ -20,14 +27,14 @@ class router {
 		//default actions are called 'index'
 		$action = "index";
 		
-		//Handle home page requests
+		//Handle welcome page requests
 		if (count($path_components) == 1) {
-			router::perform_controller_action("home",$action,array(),array());
+			Router::perform_controller_action(self::$welcome_route,$action,array(),array());
 		}
 	
 		
 		//Loop through all the routes we defined in route.php, and try to find one that matches our request
-		foreach ($GLOBALS['routes'] as $route => $controller) {
+		foreach (self::$routes as $route => $controller) {
 			$route_components = explode("/",$route);
 			$action = "index";
 			$i=0;
@@ -79,7 +86,7 @@ class router {
 			//This route is a match for our request, let's get the controller working on it
 			if ($goodRoute && ($i >= count($path_components) || $path_components[$i] == "")) {
 
-				router::perform_controller_action($controller,$action,$objects,$parameters);
+				Router::perform_controller_action($controller,$action,$objects,$parameters);
 			}
 		}
 		
@@ -96,17 +103,20 @@ class router {
 		}
 		
 		//Let's look for a controller
-		$controller_path = SITE_PATH."/controllers/".$class_path."_controller.php";
-
+		$controller_path = App::$site."/controllers/".$class_path."_controller.php";
 
 		if (file_exists($controller_path)) {
 			require_once($controller_path);
 			
 			$class_path_components = explode("/",$class_path);
+			
 			$class = $class_path_components[count($class_path_components)-1];
-			$controller_class = $class."_controller";
+	      	$class[0] = strtoupper($class[0]);
+		    $class= preg_replace_callback('/_([a-z])/', create_function('$c', 'return strtoupper($c[1]);'), $class);
+		
+			$controller_class = $class."Controller";
 			if (!method_exists($controller_class,$action)) {
-				if (router::render_view($class_path,$action)) {
+				if (Router::render_view($class_path,$action)) {
 					exit;
 				} else {
 					fatal_error("$controller_class does not respond to $action");
@@ -120,13 +130,13 @@ class router {
 		}
 		
 		//If no controller was found, we'll look for a view
-		if (router::render_view($class_path,$action)) {
+		if (Router::render_view($class_path,$action)) {
 			exit;
 		}
 	}
 	
 	static function render_view($class_path,$action) {
-		$view_path = SITE_PATH."/views/$class_path/".$action.".php";
+		$view_path = App::$site."/views/$class_path/".$action.".php";
 		if (file_exists($view_path)) {
 			$controller = new controller();
 			require_once($view_path);

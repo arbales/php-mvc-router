@@ -1,8 +1,11 @@
 <?php
-$GLOBALS['routes'] = array(
+Router::$welcome_route = "welcome";
+Router::$routes = array(
+	
+	'/index.php' => 'welcome',
 
 	//Requests to /hello-world will go to the hello_world controller's 'index' action
-	'/hello-world' => 'hello_world',		
+	'/hello-world' => 'HelloWorld',		
 	
 	//Requests to /hello-world will go to the hello_world controller's 'say-hello' action
 	'/hello-world/say-hi' => 'hello_world:say_hello', 
